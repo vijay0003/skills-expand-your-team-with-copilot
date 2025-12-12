@@ -688,11 +688,19 @@ footer {
   transition: background-color 0.2s, transform 0.2s;
   border: none;
   cursor: pointer;
+  color: var(--primary-text);
+}
+
+body.dark-mode #theme-toggle {
+  background-color: rgba(18, 18, 18, 0.2);
 }
 
 #theme-toggle:hover {
   background-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
+}
+
+body.dark-mode #theme-toggle:hover {
+  background-color: rgba(18, 18, 18, 0.3);
 }
 
 .theme-icon {
