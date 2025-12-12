@@ -569,6 +569,21 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-buttons">
+        <span class="share-label">Share:</span>
+        <button class="share-button share-twitter" data-activity="${name}" title="Share on Twitter">
+          <span class="share-icon">🐦</span>
+        </button>
+        <button class="share-button share-facebook" data-activity="${name}" title="Share on Facebook">
+          <span class="share-icon">📘</span>
+        </button>
+        <button class="share-button share-email" data-activity="${name}" title="Share via Email">
+          <span class="share-icon">✉️</span>
+        </button>
+        <button class="share-button share-copy" data-activity="${name}" title="Copy Link">
+          <span class="share-icon">🔗</span>
+        </button>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -586,6 +601,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const activityName = e.currentTarget.dataset.activity;
+        if (button.classList.contains("share-twitter")) {
+          shareOnTwitter(activityName, details);
+        } else if (button.classList.contains("share-facebook")) {
+          shareOnFacebook(activityName, details);
+        } else if (button.classList.contains("share-email")) {
+          shareViaEmail(activityName, details);
+        } else if (button.classList.contains("share-copy")) {
+          copyActivityLink(activityName);
+        }
+      });
+    });
 
     activitiesList.appendChild(activityCard);
   }
@@ -860,6 +892,67 @@ document.addEventListener("DOMContentLoaded", () => {
     setDayFilter,
     setTimeRangeFilter,
   };
+
+  // Social sharing functions
+  function createActivityUrl(activityName) {
+    // Create a URL that could be used to link to this activity
+    // In a real app, this would be a deep link to the specific activity
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?activity=${encodeURIComponent(activityName)}`;
+  }
+
+  function shareOnTwitter(activityName, details) {
+    const url = createActivityUrl(activityName);
+    const schedule = formatSchedule(details);
+    const text = `Check out ${activityName} at Mergington High School! ${details.description} - ${schedule}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+  }
+
+  function shareOnFacebook(activityName, details) {
+    const url = createActivityUrl(activityName);
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank', 'width=550,height=420');
+  }
+
+  function shareViaEmail(activityName, details) {
+    const url = createActivityUrl(activityName);
+    const schedule = formatSchedule(details);
+    const subject = `Check out ${activityName} at Mergington High School`;
+    const body = `I thought you might be interested in this activity:\n\n${activityName}\n${details.description}\n\nSchedule: ${schedule}\n\nLearn more: ${url}`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  }
+
+  function copyActivityLink(activityName) {
+    const url = createActivityUrl(activityName);
+    
+    // Use the Clipboard API to copy the URL
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showMessage('Link copied to clipboard!', 'success');
+      }).catch(err => {
+        console.error('Failed to copy link:', err);
+        showMessage('Failed to copy link', 'error');
+      });
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showMessage('Link copied to clipboard!', 'success');
+      } catch (err) {
+        console.error('Failed to copy link:', err);
+        showMessage('Failed to copy link', 'error');
+      }
+      document.body.removeChild(textArea);
+    }
+  }
 
   // Initialize app
   checkAuthentication();
